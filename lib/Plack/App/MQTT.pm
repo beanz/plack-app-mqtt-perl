@@ -289,10 +289,17 @@ __DATA__
       return;
     };
     function addMQTTmessage(msg) {
-      var topic = $('<td/>').addClass('topic').text(msg.topic);
-      var text = $('<td/>').addClass('text').text(msg.message);
-      $('#messages').prepend($('<tr/>').addClass('mqtt-message')
-                             .append(topic).append(text));
+      var tid = msg.topic.replace(/"/g, '#');
+      var sel = $('#messages td[topic="'+tid+'"]');
+      if (sel.length) {
+        $(sel).text(msg.message);
+      } else {
+        var topic = $('<th/>').addClass('topic').text(msg.topic);
+        var text = $('<td/>').attr('topic', tid)
+                             .addClass('text').text(msg.message);
+        $('#messages').prepend($('<tr/>').addClass('mqtt-message')
+                                         .append(topic).append(text));
+      }
     };
     function receiveMQTTmessage() {
       $.ajax({
