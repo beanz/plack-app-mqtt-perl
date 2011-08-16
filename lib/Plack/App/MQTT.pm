@@ -66,8 +66,6 @@ use Plack::Request;
 use JSON;
 use MIME::Base64;
 
-our $VERSION = 0.1;
-
 our $return_404 =
   [404, ['Content-Type' => 'text/plain', 'Content-Length' => 9], ['not found']];
 
@@ -265,6 +263,7 @@ __DATA__
 ==== / ====
 ? my ($env, $req, $topic) = @_;
 ? my $mxhr = $req->param('mxhr');
+? my $ver = $Plack::App::MQTT::VERSION ? '/'.$Plack::App::MQTT::VERSION : '';
 <html>
 <head>
   <title>MQTT <?= $topic ?></title>
@@ -275,6 +274,20 @@ __DATA__
   <script src="/js/Stream.js"></script>
 ? }
   <script type="text/javascript">
+    function doPublish(pubtopic, pubmessage) {
+      var message = pubmessage.attr('value');
+      if (!message) return;
+      var topic = pubtopic.attr('value') || '<?= $topic ?>';
+      $.ajax({
+        url: "pub",
+        data: { topic: topic, message: message },
+        type: 'post',
+        dataType: 'json',
+        success: function(r) { }
+      });
+      pubmessage.attr('value', '');
+      return;
+    };
     function addMQTTmessage(msg) {
       var topic = $('<td/>').addClass('topic').text(msg.topic);
       var text = $('<td/>').addClass('text').text(msg.message);
@@ -314,11 +327,18 @@ __DATA__
 <body>
 <h1>MQTT <?= $topic ?></h1>
 
+<!-- move this input out of form so Firefox can submit with enter key :/ -->
+Topic (for publish): <input id="pubtopic" name="pubtopic"
+                             type="text" size="48" />
+<form onsubmit="doPublish($('#pubtopic'), $('#pubmessage')); return false">
+Message: <input id="pubmessage" type="text" size="48"/>
+</form>
+
 <table border="1" id="messages"></table>
 
 <div id="footer">Powered by <a
   href="http://github.com/beanz/plack-app-mqtt-perl"
-  >Plack::App::MQTT/<?= $Plack::App::MQTT::VERSION ?></a>.</div>
+  >Plack::App::MQTT<?= $ver ?></a>.</div>
 
 </body>
 </html>
