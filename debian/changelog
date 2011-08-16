@@ -1,0 +1,5 @@
+libplack-app-mqtt-perl (0.1-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Mark Hindess <soft-debian@temporalanomaly.com>  Tue, 16 Aug 2011 10:58:00 +0100
