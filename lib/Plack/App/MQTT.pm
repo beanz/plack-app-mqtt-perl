@@ -162,10 +162,10 @@ sub publish {
   my $mqtt = $self->{mqtt};
   return sub {
     my $respond = shift;
-    print STDERR "Publishing: $topic => $message\n";
+    print STDERR "Publishing: $topic => $message\n" if DEBUG;
     my $cv = $mqtt->publish(topic => $topic, message => $message);
     $cv->cb(sub {
-              print STDERR "Published: $topic => $message\n";
+              print STDERR "Published: $topic => $message\n" if DEBUG;
               return_json($respond, { success => 1 });
             });
   };
@@ -180,6 +180,7 @@ sub subscribe {
     my $cb;
     $cb = sub {
       my ($topic, $message) = @_;
+      print STDERR "Received: $topic => $message\n" if DEBUG;
       $mqtt->unsubscribe(topic => $topic, callback => $cb);
       return_json($respond, mqtt_record($topic, $message));
     };
@@ -216,6 +217,7 @@ sub submxhr {
     my $cb;
     $cb = sub {
       my ($topic, $message) = @_;
+      print STDERR "Received: $topic => $message\n" if DEBUG;
       $writer->write("Content-Type: application/json\n\n".
                      JSON::encode_json(mqtt_record($topic, $message)).
                      "\n--".$boundary."\n");
@@ -295,13 +297,36 @@ __DATA__
       var tid = msg.topic.replace(/"/g, '#');
       var sel = $('#messages td[topic="'+tid+'"]');
       if (sel.length) {
-        $(sel).text(msg.message);
+        sel.addClass('new').text(msg.message);
+        var timer =
+          setTimeout(function(){
+                       sel.removeClass('new');
+                       clearTimeout(timer);
+                     }, 500);
       } else {
-        var topic = $('<th/>').addClass('topic').text(msg.topic);
+        var topic_text = msg.topic;
+        var topic = $('<th/>').addClass('topic').text(topic_text);
         var text = $('<td/>').attr('topic', tid)
                              .addClass('text').text(msg.message);
-        $('#messages').prepend($('<tr/>').addClass('mqtt-message')
-                                         .append(topic).append(text));
+        var row = $('<tr/>').addClass('mqtt-message').addClass('new')
+                            .append(topic).append(text);
+        var added = 0;
+        $('#messages').find('tr').each(function() {
+          var t = $(this).find('th').text();
+          if (t >= topic_text) {
+            $(this).before(row);
+            added = 1;
+            return false;
+          }
+        });
+        if (added == 0) {
+          $('#messages tbody').append(row);
+        }
+        var timer =
+          setTimeout(function(){
+                       row.removeClass('new');
+                       clearTimeout(timer);
+                     }, 500);
       }
     };
     function receiveMQTTmessage() {
@@ -331,6 +356,7 @@ __DATA__
     });
   </script>
 <style>
+.new { color: red; }
 #footer { clear: both; text-align: center; padding-top: 2em }
 </style>
 </head>
@@ -344,7 +370,7 @@ Topic (for publish): <input id="pubtopic" name="pubtopic"
 Message: <input id="pubmessage" type="text" size="48"/>
 </form>
 
-<table border="1" id="messages"></table>
+<table border="1" id="messages"><tbody></tbody></table>
 
 <div id="footer">Powered by <a
   href="http://github.com/beanz/plack-app-mqtt-perl"
