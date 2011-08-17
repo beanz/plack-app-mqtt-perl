@@ -61,7 +61,7 @@ use Sub::Name;
 use Scalar::Util qw/weaken/;
 use parent qw/Plack::Component/;
 use Plack::Util::Accessor qw/host port timeout keep_alive_timer client_id
-                             allow_publish/;
+                             topic_regexp allow_publish/;
 use Plack::Request;
 use JSON;
 use MIME::Base64;
@@ -138,6 +138,8 @@ sub prepare_app {
     $args{$attr} = $v if (defined $v);
   }
   $self->{mqtt} = AnyEvent::MQTT->new(%args);
+  $self->{topic_re} = qr!$self->{topic_regexp}!o
+    if (defined $self->{topic_regexp});
 }
 
 sub call {
@@ -146,6 +148,8 @@ sub call {
   my $path = $req->path_info;
   my $topic = $req->param('topic');
   return $self->static($env, $req, $path, $topic) if(exists $static{$path});
+  return $return_403 if (defined $topic && defined $self->{topic_re} &&
+                         $topic !~ $self->{topic_re});
   return $self->template($env, $req, $path, $topic) if(exists $template{$path});
   my $method = $methods{$path} or return $return_404;
   return $return_403 if ($path eq '/pub' && !$self->allow_publish);
@@ -212,7 +216,6 @@ sub submxhr {
     my $cb;
     $cb = sub {
       my ($topic, $message) = @_;
-      print STDERR "Received: $topic => $message\n";
       $writer->write("Content-Type: application/json\n\n".
                      JSON::encode_json(mqtt_record($topic, $message)).
                      "\n--".$boundary."\n");
