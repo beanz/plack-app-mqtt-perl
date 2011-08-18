@@ -177,10 +177,10 @@ bridge.  It can be used on its own or combined with L<Plack::Builder>
 to provide an AJAX MQTT interface for existing Plack applications
 (such as L<Catalyst>, L<Dancer>, etc applications).
 
-This distribution includes a simple example application C<eg/mqtt.psgi>
+This distribution includes a simple example application C<eg/mqttui.psgi>
 for testing by running:
 
-  MQTT_SERVER=127.0.0.1 plackup eg/mqtt.psgi
+  MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
 
 then accessing, for example:
 
@@ -230,8 +230,7 @@ subsequent releases.
 
 =head1 BUGS
 
-This code has lots of bugs - multiple non-mxhr clients wont work, the
-example inline UI is ugly, etc.
+This code has lots of bugs - multiple non-mxhr clients wont work, etc.
 
 =head1 DISCLAIMER
 

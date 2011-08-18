@@ -21,10 +21,10 @@ DESCRIPTION
     AJAX MQTT interface for existing Plack applications (such as Catalyst,
     Dancer, etc applications).
 
-    This distribution includes a simple example application "eg/mqtt.psgi"
+    This distribution includes a simple example application "eg/mqttui.psgi"
     for testing by running:
 
-      MQTT_SERVER=127.0.0.1 plackup eg/mqtt.psgi
+      MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
 
     then accessing, for example:
 
@@ -61,8 +61,7 @@ API
     subsequent releases.
 
 BUGS
-    This code has lots of bugs - multiple non-mxhr clients wont work, the
-    example inline UI is ugly, etc.
+    This code has lots of bugs - multiple non-mxhr clients wont work, etc.
 
 DISCLAIMER
     This is not official IBM code. I work for IBM but I'm writing this in my

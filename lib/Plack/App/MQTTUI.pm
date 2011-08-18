@@ -10,6 +10,7 @@ BEGIN {
 
 use constant DEBUG => $ENV{PLACK_APP_MQTT_DEBUG};
 use parent qw/Plack::App::MQTT/;
+use Text::MicroTemplate;
 
 my %inline_data;
 my $f;
@@ -64,7 +65,6 @@ sub page_renderer {
   my ($self, $page) = @_;
   return $self->{renderer}->{$page} if (exists $self->{renderer}->{$page});
   my $template = $template{$page};
-  require Text::MicroTemplate;
   $self->{renderer}->{$page} = Text::MicroTemplate::build_mt($template);
 }
 
