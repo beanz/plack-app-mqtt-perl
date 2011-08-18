@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Plack::App::MQTTUI;
 
-# ABSTRACT: Plack Application to provide AJAX to MQTT bridge
+# ABSTRACT: Plack Application to provide simple UI for AJAX to MQTT bridge
 
 =head1 SYNOPSIS
 
