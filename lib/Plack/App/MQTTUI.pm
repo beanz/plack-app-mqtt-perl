@@ -109,7 +109,8 @@ sub _static {
 
 sub _template {
   my ($self, $env, $req, $page, $topic) = @_;
-  my $html = $self->_page_renderer($page)->($env, $req, $topic)->as_string;
+  my $html =
+    $self->_page_renderer($page)->($self, $env, $req, $topic)->as_string;
   return [200,
           ['Content-Type' => 'text/html', 'Content-Length' => length $html],
           [$html]];
@@ -126,7 +127,8 @@ sub _page_renderer {
 
 __DATA__
 ==== / ====
-? my ($env, $req, $topic) = @_;
+? my ($self, $env, $req, $topic) = @_;
+? my $allow_pub = $self->allow_publish;
 ? my $mxhr = $req->param('mxhr');
 ? my $ver = $Plack::App::MQTT::VERSION ? '/'.$Plack::App::MQTT::VERSION : '';
 <html>
@@ -139,6 +141,7 @@ __DATA__
   <script src="/js/Stream.js"></script>
 ? }
   <script type="text/javascript">
+? if ($allow_pub) {
     function doPublish(pubtopic, pubmessage) {
       var message = pubmessage.attr('value');
       if (!message) return;
@@ -153,6 +156,7 @@ __DATA__
       pubmessage.attr('value', '');
       return;
     };
+? }
     function addMQTTmessage(msg) {
       var tid = msg.topic.replace(/"/g, '#');
       var sel = $('#messages td[topic="'+tid+'"]');
@@ -222,14 +226,14 @@ __DATA__
 </head>
 <body>
 <h1>MQTT <?= $topic ?></h1>
-
+? if ($allow_pub) {
 <!-- move this input out of form so Firefox can submit with enter key :/ -->
 Topic (for publish): <input id="pubtopic" name="pubtopic"
                              type="text" size="48" />
 <form onsubmit="doPublish($('#pubtopic'), $('#pubmessage')); return false">
 Message: <input id="pubmessage" type="text" size="48"/>
 </form>
-
+? }
 <table border="1" id="messages"><tbody></tbody></table>
 
 <div id="footer">Powered by <a
