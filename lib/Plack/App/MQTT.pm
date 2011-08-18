@@ -241,7 +241,7 @@ is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
 
 This method routes HTTP requests to C</pub>, C</sub> and C</submxhr>
 to the L</publish($env, $req, $topic)>, L</subscribe($env, $req,
-$topic)>, or L</subxmhr($env, $req, $topic)> methods respectively.
+$topic)>, or L</submxhr($env, $req, $topic)> methods respectively.
 
 If the topic fails the L</is_valid_topic($topic)> test then a 403
 error is returned.  If the request is C<'/pub'> then a 403 error is

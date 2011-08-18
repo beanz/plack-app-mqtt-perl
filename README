@@ -59,7 +59,7 @@ METHODS
   "call($env)"
     This method routes HTTP requests to "/pub", "/sub" and "/submxhr" to the
     "publish($env, $req, $topic)", "subscribe($env, $req, $topic)", or
-    "subxmhr($env, $req, $topic)" methods respectively.
+    "submxhr($env, $req, $topic)" methods respectively.
 
     If the topic fails the "is_valid_topic($topic)" test then a 403 error is
     returned. If the request is '/pub' then a 403 error is returned unless
