@@ -216,7 +216,7 @@ version 1.112300
 This module is a Plack application that provides an AJAX to MQTT
 bridge.  It can be used on its own or combined with L<Plack::Builder>
 to provide an AJAX MQTT interface for existing Plack applications
-(such as L<Calalyst>, L<Dancer>, etc applications).
+(such as L<Catalyst>, L<Dancer>, etc applications).
 
 This distribution includes a simple example application C<eg/mqtt.psgi>
 for testing by running:
