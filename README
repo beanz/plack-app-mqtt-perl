@@ -57,11 +57,13 @@ METHODS
         "Net::MQTT::Message[NNNNN]" where NNNNN is the process id.
 
   "call($env)"
-    This method routes HTTP requests to the "publish($env, $req, $topic)",
-    "subscribe($env, $req, $topic)", or "subxmhr($env, $req, $topic)"
-    methods. If the topic fails the "is_valid_topic($topic)" test then a 403
-    error is returned. If the request is '/pub' then a 403 error is returned
-    unless the "allow_publish" parameter was passed a true value to the
+    This method routes HTTP requests to "/pub", "/sub" and "/submxhr" to the
+    "publish($env, $req, $topic)", "subscribe($env, $req, $topic)", or
+    "subxmhr($env, $req, $topic)" methods respectively.
+
+    If the topic fails the "is_valid_topic($topic)" test then a 403 error is
+    returned. If the request is '/pub' then a 403 error is returned unless
+    the "allow_publish" parameter was passed a true value to the
     constructor.
 
   "is_valid_topic($topic)"
@@ -76,6 +78,27 @@ METHODS
   "return_403([$message])"
     This helper method constructs a 403 response with the given message or
     'forbidden' if no message is supplied.
+
+  "publish($env, $req, $topic)"
+    This method processes HTTP requests to "/pub". It requires "topic" and
+    "message" parameters and returns the JSON '{ success: 1 }' when the
+    message has been published.
+
+  "subscribe($env, $req, $topic)"
+    This method processes HTTP requests to "/sub". It requires a "topic"
+    parameter and returns the next MQTT message received on that topic as a
+    JSON record for the form:
+
+      { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+    TODO: need to add per-client backlog to avoid missing messages
+
+  "submxhr($env, $req, $topic)"
+    This method processes HTTP requests to "/submxhr". It requires a "topic"
+    parameter and returns a 'multipart/mixed' response with a series of JSON
+    records for the form:
+
+      { type: 'mqtt_message', message: 'message', topic: 'topic' }
 
 API
     This is an early release and the API is very likely to change in

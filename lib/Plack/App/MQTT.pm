@@ -76,6 +76,7 @@ sub return_403 {
    [$message]];
 }
 
+
 sub publish {
   my ($self, $env, $req, $topic) = @_;
   my $message = $req->param('message');
@@ -91,7 +92,7 @@ sub publish {
   };
 }
 
-# need to add per-client backlog to avoid missing messagess
+
 sub subscribe {
   my ($self, $env, $req, $topic) = @_;
   my $mqtt = $self->{mqtt};
@@ -122,6 +123,7 @@ sub _return_json {
                'Content-Length' => length $json],
               [$json]]);
 }
+
 
 sub submxhr {
   my ($self, $env, $req, $topic) = @_;
@@ -237,12 +239,14 @@ is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
 
 =head2 C<call($env)>
 
-This method routes HTTP requests to the L</publish($env, $req,
-$topic)>, L</subscribe($env, $req, $topic)>, or L</subxmhr($env, $req,
-$topic)> methods.  If the topic fails the L</is_valid_topic($topic)>
-test then a 403 error is returned.  If the request is C<'/pub'> then a
-403 error is returned unless the C<allow_publish> parameter was passed
-a true value to the constructor.
+This method routes HTTP requests to C</pub>, C</sub> and C</submxhr>
+to the L</publish($env, $req, $topic)>, L</subscribe($env, $req,
+$topic)>, or L</subxmhr($env, $req, $topic)> methods respectively.
+
+If the topic fails the L</is_valid_topic($topic)> test then a 403
+error is returned.  If the request is C<'/pub'> then a 403 error is
+returned unless the C<allow_publish> parameter was passed a true value
+to the constructor.
 
 =head2 C<is_valid_topic($topic)>
 
@@ -260,6 +264,30 @@ This helper method constructs a 404 response with the given message or
 
 This helper method constructs a 403 response with the given message or
 'forbidden' if no message is supplied.
+
+=head2 C<publish($env, $req, $topic)>
+
+This method processes HTTP requests to C</pub>.  It requires C<topic>
+and C<message> parameters and returns the JSON '{ success: 1 }' when
+the message has been published.
+
+=head2 C<subscribe($env, $req, $topic)>
+
+This method processes HTTP requests to C</sub>.  It requires a
+C<topic> parameter and returns the next MQTT message received on that
+topic as a JSON record for the form:
+
+  { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+TODO: need to add per-client backlog to avoid missing messages
+
+=head2 C<submxhr($env, $req, $topic)>
+
+This method processes HTTP requests to C</submxhr>.  It requires a
+C<topic> parameter and returns a 'multipart/mixed' response with a
+series of JSON records for the form:
+
+  { type: 'mqtt_message', message: 'message', topic: 'topic' }
 
 =head1 API
 
