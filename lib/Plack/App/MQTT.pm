@@ -206,7 +206,7 @@ sub _return_json {
 sub submxhr {
   my ($self, $env, $req, $topic) = @_;
   my $mqtt = $self->{mqtt};
-  my $boundary = mxhr_boundary();
+  my $boundary = _mxhr_boundary();
   return sub {
     my $respond = shift;
     my $writer =
@@ -226,7 +226,7 @@ sub submxhr {
   };
 }
 
-sub mxhr_boundary { # copied from Tatsumaki/Handler.pm
+sub _mxhr_boundary { # copied from Tatsumaki/Handler.pm
   my $size = 2;
   my $b = MIME::Base64::encode(join("", map chr(rand(256)), 1..$size*3), "");
   $b =~ s/[\W]/X/g;  # ensure alnum only
