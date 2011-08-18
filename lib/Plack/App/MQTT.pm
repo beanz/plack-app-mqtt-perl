@@ -1,58 +1,12 @@
 use strict;
 use warnings;
 package Plack::App::MQTT;
+BEGIN {
+  $Plack::App::MQTT::VERSION = '1.112300';
+}
 
 # ABSTRACT: Plack Application to provide AJAX to MQTT bridge
 
-=head1 SYNOPSIS
-
-  use Plack::App::MQTT;
-  my $app = Plack::App::MQTT->new(host => 'mqtt.example.com',
-                                  allow_publish => 1)->to_app;
-
-  # Or mount under /mqtt namespace, subscribe only
-  use Plack::Builder;
-  builder {
-    mount '/mqtt' => Plack::App::MQTT->new();
-  };
-
-=head1 DESCRIPTION
-
-This module is a Plack application that provides an AJAX to MQTT
-bridge.  It can be used on its own or combined with L<Plack::Builder>
-to provide an AJAX MQTT interface for existing Plack applications
-(such as L<Calalyst>, L<Dancer>, etc applications).
-
-This distribution includes a simple example application C<eg/mqtt.psgi>
-for testing by running:
-
-  MQTT_SERVER=127.0.0.1 plackup eg/mqtt.psgi
-
-then accessing, for example:
-
-  http://127.0.0.1:5000/?topic=test
-  http://127.0.0.1:5000/?topic=test&mxhr=1
-
-The former provides a simple long poll interface (that will often miss
-messages) and the later provides a more reliable "multipart/mixed"
-interface.
-
-=head1 API
-
-This is an early release and the API is B<very> likely to change in
-subsequent releases.
-
-=head1 BUGS
-
-This code has lots of bugs - multiple non-mxhr clients wont work, the
-example inline UI is ugly, etc.
-
-=head1 DISCLAIMER
-
-This is B<not> official IBM code.  I work for IBM but I'm writing this
-in my spare time (with permission) for fun.
-
-=cut
 
 use constant DEBUG => $ENV{PLACK_APP_MQTT_DEBUG};
 use AnyEvent;
@@ -98,37 +52,6 @@ our %methods =
    '/submxhr' => 'submxhr',
   );
 
-=method C<new(%params)>
-
-Constructs a new C<Plack::App::MQTT> object.  The supported parameters
-are:
-
-=over
-
-=item C<host>
-
-The server host.  Defaults to C<127.0.0.1>.
-
-=item C<port>
-
-The server port.  Defaults to C<1883>.
-
-=item C<timeout>
-
-The timeout for responses from the server.
-
-=item C<keep_alive_timer>
-
-The keep alive timer.
-
-=item C<client_id>
-
-Sets the client id for the client overriding the default which
-is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
-
-=back
-
-=cut
 
 sub prepare_app {
   my $self = shift;
@@ -263,6 +186,112 @@ sub DESTROY {
 }
 
 1;
+
+
+
+=pod
+
+=head1 NAME
+
+Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
+
+=head1 VERSION
+
+version 1.112300
+
+=head1 SYNOPSIS
+
+  use Plack::App::MQTT;
+  my $app = Plack::App::MQTT->new(host => 'mqtt.example.com',
+                                  allow_publish => 1)->to_app;
+
+  # Or mount under /mqtt namespace, subscribe only
+  use Plack::Builder;
+  builder {
+    mount '/mqtt' => Plack::App::MQTT->new();
+  };
+
+=head1 DESCRIPTION
+
+This module is a Plack application that provides an AJAX to MQTT
+bridge.  It can be used on its own or combined with L<Plack::Builder>
+to provide an AJAX MQTT interface for existing Plack applications
+(such as L<Calalyst>, L<Dancer>, etc applications).
+
+This distribution includes a simple example application C<eg/mqtt.psgi>
+for testing by running:
+
+  MQTT_SERVER=127.0.0.1 plackup eg/mqtt.psgi
+
+then accessing, for example:
+
+  http://127.0.0.1:5000/?topic=test
+  http://127.0.0.1:5000/?topic=test&mxhr=1
+
+The former provides a simple long poll interface (that will often miss
+messages) and the later provides a more reliable "multipart/mixed"
+interface.
+
+=head1 METHODS
+
+=head2 C<new(%params)>
+
+Constructs a new C<Plack::App::MQTT> object.  The supported parameters
+are:
+
+=over
+
+=item C<host>
+
+The server host.  Defaults to C<127.0.0.1>.
+
+=item C<port>
+
+The server port.  Defaults to C<1883>.
+
+=item C<timeout>
+
+The timeout for responses from the server.
+
+=item C<keep_alive_timer>
+
+The keep alive timer.
+
+=item C<client_id>
+
+Sets the client id for the client overriding the default which
+is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
+
+=back
+
+=head1 API
+
+This is an early release and the API is B<very> likely to change in
+subsequent releases.
+
+=head1 BUGS
+
+This code has lots of bugs - multiple non-mxhr clients wont work, the
+example inline UI is ugly, etc.
+
+=head1 DISCLAIMER
+
+This is B<not> official IBM code.  I work for IBM but I'm writing this
+in my spare time (with permission) for fun.
+
+=head1 AUTHOR
+
+Mark Hindess <soft-cpan@temporalanomaly.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Mark Hindess.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
 
 __DATA__
 ==== / ====

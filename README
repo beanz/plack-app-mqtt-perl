@@ -1,0 +1,79 @@
+NAME
+    Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
+
+VERSION
+    version 1.112300
+
+SYNOPSIS
+      use Plack::App::MQTT;
+      my $app = Plack::App::MQTT->new(host => 'mqtt.example.com',
+                                      allow_publish => 1)->to_app;
+
+      # Or mount under /mqtt namespace, subscribe only
+      use Plack::Builder;
+      builder {
+        mount '/mqtt' => Plack::App::MQTT->new();
+      };
+
+DESCRIPTION
+    This module is a Plack application that provides an AJAX to MQTT bridge.
+    It can be used on its own or combined with Plack::Builder to provide an
+    AJAX MQTT interface for existing Plack applications (such as Calalyst,
+    Dancer, etc applications).
+
+    This distribution includes a simple example application "eg/mqtt.psgi"
+    for testing by running:
+
+      MQTT_SERVER=127.0.0.1 plackup eg/mqtt.psgi
+
+    then accessing, for example:
+
+      http://127.0.0.1:5000/?topic=test
+      http://127.0.0.1:5000/?topic=test&mxhr=1
+
+    The former provides a simple long poll interface (that will often miss
+    messages) and the later provides a more reliable "multipart/mixed"
+    interface.
+
+METHODS
+  "new(%params)"
+    Constructs a new "Plack::App::MQTT" object. The supported parameters
+    are:
+
+    "host"
+        The server host. Defaults to 127.0.0.1.
+
+    "port"
+        The server port. Defaults to 1883.
+
+    "timeout"
+        The timeout for responses from the server.
+
+    "keep_alive_timer"
+        The keep alive timer.
+
+    "client_id"
+        Sets the client id for the client overriding the default which is
+        "Net::MQTT::Message[NNNNN]" where NNNNN is the process id.
+
+API
+    This is an early release and the API is very likely to change in
+    subsequent releases.
+
+BUGS
+    This code has lots of bugs - multiple non-mxhr clients wont work, the
+    example inline UI is ugly, etc.
+
+DISCLAIMER
+    This is not official IBM code. I work for IBM but I'm writing this in my
+    spare time (with permission) for fun.
+
+AUTHOR
+    Mark Hindess <soft-cpan@temporalanomaly.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2011 by Mark Hindess.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+
