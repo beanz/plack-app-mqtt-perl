@@ -23,8 +23,8 @@ bridge.  It can be used on its own or combined with L<Plack::Builder>
 to provide an AJAX MQTT interface for existing Plack applications
 (such as L<Catalyst>, L<Dancer>, etc applications).
 
-This distribution includes a simple example application C<eg/mqttui.psgi>
-for testing by running:
+This distribution includes an example application C<eg/mqttui.psgi>
+that can be used for testing by running:
 
   MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
 
@@ -34,8 +34,9 @@ then accessing, for example:
   http://127.0.0.1:5000/?topic=test&mxhr=1
 
 The former provides a simple long poll interface (that will often miss
-messages) and the later provides a more reliable "multipart/mixed"
-interface.
+messages - I plan to fix this) and the later provides a more reliable
+"multipart/mixed" interface using the
+L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
 
 =head1 API
 
@@ -97,8 +98,14 @@ The keep alive timer.
 
 =item C<client_id>
 
-Sets the client id for the client overriding the default which
-is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
+Sets the client id for the client overriding the default which is
+C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
+
+=item C<allow_publish>
+
+If set to true, then the C<'/pub'> requests will be allowed.
+Otherwise they will result in a '403 forbidden' response.  The default
+is false.
 
 =back
 
@@ -116,29 +123,81 @@ sub prepare_app {
     if (defined $self->{topic_regexp});
 }
 
+=method C<call($env)>
+
+This method routes HTTP requests to C</pub>, C</sub> and C</submxhr>
+to the L</publish($env, $req, $topic)>, L</subscribe($env, $req,
+$topic)>, or L</submxhr($env, $req, $topic)> methods respectively.
+
+If the topic fails the L</is_valid_topic($topic)> test then a 403
+error is returned.  If the request is C<'/pub'> then a 403 error is
+returned unless the C<allow_publish> parameter was passed a true value
+to the constructor.
+
+=cut
+
 sub call {
   my ($self, $env) = @_;
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->_return_403 unless ($self->valid_topic);
+  return $self->_return_403 unless ($self->is_valid_topic);
   my $method = $methods{$path} or return $self->_return_404;
   return $self->_return_403 if ($path eq '/pub' && !$self->allow_publish);
   return $self->$method($env, $req, $topic);
 }
 
-sub valid_topic {
+=method C<is_valid_topic($topic)>
+
+This helper method returns true if the topic is valid.  If the
+C<topic_regexp> parameter was passed to the constructor, then the
+topic is valid if it matches that expression.  Otherwise any topic is
+valid.
+
+=cut
+
+sub is_valid_topic {
   my ($self, $topic) = @_;
   !defined $topic || !defined $self->{topic_re} || $topic =~ $self->{topic_re}
 }
 
-sub _return_404 {
-  [404, ['Content-Type' => 'text/plain', 'Content-Length' => 9], ['not found']];
+=method C<return_404([$message])>
+
+This helper method constructs a 404 response with the given message or
+'not found' if no message is supplied.
+
+=cut
+
+sub return_404 {
+  my ($self, $message) = @_;
+  $message = 'not found' unless (defined $message);
+  [404,
+   ['Content-Type' => 'text/plain', 'Content-Length' => length $message],
+   [$message]];
 }
 
-sub _return_403 {
-  [403, ['Content-Type' => 'text/plain', 'Content-Length' => 9], ['forbidden']];
+=method C<return_403([$message])>
+
+This helper method constructs a 403 response with the given message or
+'forbidden' if no message is supplied.
+
+=cut
+
+sub return_403 {
+  my ($self, $message) = @_;
+  $message = 'forbidden' unless (defined $message);
+  [403,
+   ['Content-Type' => 'text/plain', 'Content-Length' => length $message],
+   [$message]];
 }
+
+=method C<publish($env, $req, $topic)>
+
+This method processes HTTP requests to C</pub>.  It requires C<topic>
+and C<message> parameters and returns the JSON '{ success: 1 }' when
+the message has been published.
+
+=cut
 
 sub publish {
   my ($self, $env, $req, $topic) = @_;
@@ -155,7 +214,18 @@ sub publish {
   };
 }
 
-# need to add per-client backlog to avoid missing messagess
+=method C<subscribe($env, $req, $topic)>
+
+This method processes HTTP requests to C</sub>.  It requires a
+C<topic> parameter and returns the next MQTT message received on that
+topic as a JSON record for the form:
+
+  { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+TODO: need to add per-client backlog to avoid missing messages
+
+=cut
+
 sub subscribe {
   my ($self, $env, $req, $topic) = @_;
   my $mqtt = $self->{mqtt};
@@ -186,6 +256,16 @@ sub _return_json {
                'Content-Length' => length $json],
               [$json]]);
 }
+
+=method C<submxhr($env, $req, $topic)>
+
+This method processes HTTP requests to C</submxhr>.  It requires a
+C<topic> parameter and returns a 'multipart/mixed' response with a
+series of JSON records for the form:
+
+  { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+=cut
 
 sub submxhr {
   my ($self, $env, $req, $topic) = @_;
