@@ -14,7 +14,9 @@ debian/rules
 debian/watch
 dist.ini
 eg/mqtt.psgi
+eg/mqttui.psgi
 lib/Plack/App/MQTT.pm
+lib/Plack/App/MQTTUI.pm
 t/author-critic.t
 t/release-common_spelling.t
 t/release-eol.t
