@@ -56,6 +56,27 @@ METHODS
         Sets the client id for the client overriding the default which is
         "Net::MQTT::Message[NNNNN]" where NNNNN is the process id.
 
+  "call($env)"
+    This method routes HTTP requests to the "publish($env, $req, $topic)",
+    "subscribe($env, $req, $topic)", or "subxmhr($env, $req, $topic)"
+    methods. If the topic fails the "is_valid_topic($topic)" test then a 403
+    error is returned. If the request is '/pub' then a 403 error is returned
+    unless the "allow_publish" parameter was passed a true value to the
+    constructor.
+
+  "is_valid_topic($topic)"
+    This helper method returns true if the topic is valid. If the
+    "topic_regexp" parameter was passed to the constructor, then the topic
+    is valid if it matches that expression. Otherwise any topic is valid.
+
+  "return_404([$message])"
+    This helper method constructs a 404 response with the given message or
+    'not found' if no message is supplied.
+
+  "return_403([$message])"
+    This helper method constructs a 403 response with the given message or
+    'forbidden' if no message is supplied.
+
 API
     This is an early release and the API is very likely to change in
     subsequent releases.

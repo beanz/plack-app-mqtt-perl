@@ -40,28 +40,40 @@ sub prepare_app {
     if (defined $self->{topic_regexp});
 }
 
+
 sub call {
   my ($self, $env) = @_;
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->return_403 unless ($self->valid_topic);
-  my $method = $methods{$path} or return $self->return_404;
-  return $self->return_403 if ($path eq '/pub' && !$self->allow_publish);
+  return $self->_return_403 unless ($self->is_valid_topic);
+  my $method = $methods{$path} or return $self->_return_404;
+  return $self->_return_403 if ($path eq '/pub' && !$self->allow_publish);
   return $self->$method($env, $req, $topic);
 }
 
-sub valid_topic {
+
+sub is_valid_topic {
   my ($self, $topic) = @_;
   !defined $topic || !defined $self->{topic_re} || $topic =~ $self->{topic_re}
 }
 
+
 sub return_404 {
-  [404, ['Content-Type' => 'text/plain', 'Content-Length' => 9], ['not found']];
+  my ($self, $message) = @_;
+  $message = 'not found' unless (defined $message);
+  [404,
+   ['Content-Type' => 'text/plain', 'Content-Length' => length $message],
+   [$message]];
 }
 
+
 sub return_403 {
-  [403, ['Content-Type' => 'text/plain', 'Content-Length' => 9], ['forbidden']];
+  my ($self, $message) = @_;
+  $message = 'forbidden' unless (defined $message);
+  [403,
+   ['Content-Type' => 'text/plain', 'Content-Length' => length $message],
+   [$message]];
 }
 
 sub publish {
@@ -222,6 +234,32 @@ Sets the client id for the client overriding the default which
 is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
 
 =back
+
+=head2 C<call($env)>
+
+This method routes HTTP requests to the L</publish($env, $req,
+$topic)>, L</subscribe($env, $req, $topic)>, or L</subxmhr($env, $req,
+$topic)> methods.  If the topic fails the L</is_valid_topic($topic)>
+test then a 403 error is returned.  If the request is C<'/pub'> then a
+403 error is returned unless the C<allow_publish> parameter was passed
+a true value to the constructor.
+
+=head2 C<is_valid_topic($topic)>
+
+This helper method returns true if the topic is valid.  If the
+C<topic_regexp> parameter was passed to the constructor, then the
+topic is valid if it matches that expression.  Otherwise any topic is
+valid.
+
+=head2 C<return_404([$message])>
+
+This helper method constructs a 404 response with the given message or
+'not found' if no message is supplied.
+
+=head2 C<return_403([$message])>
+
+This helper method constructs a 403 response with the given message or
+'forbidden' if no message is supplied.
 
 =head1 API
 
