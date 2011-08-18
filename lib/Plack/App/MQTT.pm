@@ -166,7 +166,7 @@ sub publish {
     my $cv = $mqtt->publish(topic => $topic, message => $message);
     $cv->cb(sub {
               print STDERR "Published: $topic => $message\n" if DEBUG;
-              return_json($respond, { success => 1 });
+              _return_json($respond, { success => 1 });
             });
   };
 }
@@ -182,18 +182,18 @@ sub subscribe {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $mqtt->unsubscribe(topic => $topic, callback => $cb);
-      return_json($respond, mqtt_record($topic, $message));
+      _return_json($respond, _mqtt_record($topic, $message));
     };
     $mqtt->subscribe(topic => $topic, callback => $cb);
   };
 }
 
-sub mqtt_record {
+sub _mqtt_record {
   my ($topic, $message) = @_;
   { type => 'mqtt_message', message => $message, topic => $topic, }
 }
 
-sub return_json {
+sub _return_json {
   my ($respond, $ref, $code) = @_;
   $code = 200 unless (defined $code);
   my $json = JSON::encode_json($ref);
@@ -219,7 +219,7 @@ sub submxhr {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $writer->write("Content-Type: application/json\n\n".
-                     JSON::encode_json(mqtt_record($topic, $message)).
+                     JSON::encode_json(_mqtt_record($topic, $message)).
                      "\n--".$boundary."\n");
     };
     $mqtt->subscribe(topic => $topic, callback => $cb);
