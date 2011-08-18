@@ -138,6 +138,8 @@ to the constructor.
 
 sub call {
   my ($self, $env) = @_;
+  die $self.' requires psgi.streaming support'
+    unless ($env->{'psgi.streaming'});
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
