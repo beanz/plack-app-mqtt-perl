@@ -82,7 +82,7 @@ sub call {
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->return_403 unless ($self->valid_topic);
+  return $self->_return_403 unless ($self->valid_topic);
   return $self->static($env, $req, $path, $topic) if (exists $static{$path});
   return $self->template($env, $req, $path, $topic)
     if (exists $template{$path});
