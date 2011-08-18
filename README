@@ -21,8 +21,8 @@ DESCRIPTION
     AJAX MQTT interface for existing Plack applications (such as Catalyst,
     Dancer, etc applications).
 
-    This distribution includes a simple example application "eg/mqttui.psgi"
-    for testing by running:
+    This distribution includes an example application "eg/mqttui.psgi" that
+    can be used for testing by running:
 
       MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
 
@@ -32,8 +32,8 @@ DESCRIPTION
       http://127.0.0.1:5000/?topic=test&mxhr=1
 
     The former provides a simple long poll interface (that will often miss
-    messages) and the later provides a more reliable "multipart/mixed"
-    interface.
+    messages - I plan to fix this) and the later provides a more reliable
+    "multipart/mixed" interface using the <DUI.Stream> library.
 
 METHODS
   "new(%params)"
@@ -55,6 +55,11 @@ METHODS
     "client_id"
         Sets the client id for the client overriding the default which is
         "Net::MQTT::Message[NNNNN]" where NNNNN is the process id.
+
+    "allow_publish"
+        If set to true, then the '/pub' requests will be allowed. Otherwise
+        they will result in a '403 forbidden' response. The default is
+        false.
 
   "call($env)"
     This method routes HTTP requests to "/pub", "/sub" and "/submxhr" to the

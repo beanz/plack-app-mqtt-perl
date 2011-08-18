@@ -43,6 +43,8 @@ sub prepare_app {
 
 sub call {
   my ($self, $env) = @_;
+  die $self.' requires psgi.streaming support'
+    unless ($env->{'psgi.streaming'});
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
@@ -191,8 +193,8 @@ bridge.  It can be used on its own or combined with L<Plack::Builder>
 to provide an AJAX MQTT interface for existing Plack applications
 (such as L<Catalyst>, L<Dancer>, etc applications).
 
-This distribution includes a simple example application C<eg/mqttui.psgi>
-for testing by running:
+This distribution includes an example application C<eg/mqttui.psgi>
+that can be used for testing by running:
 
   MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
 
@@ -202,8 +204,9 @@ then accessing, for example:
   http://127.0.0.1:5000/?topic=test&mxhr=1
 
 The former provides a simple long poll interface (that will often miss
-messages) and the later provides a more reliable "multipart/mixed"
-interface.
+messages - I plan to fix this) and the later provides a more reliable
+"multipart/mixed" interface using the
+L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
 
 =head1 METHODS
 
@@ -232,8 +235,14 @@ The keep alive timer.
 
 =item C<client_id>
 
-Sets the client id for the client overriding the default which
-is C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
+Sets the client id for the client overriding the default which is
+C<Net::MQTT::Message[NNNNN]> where NNNNN is the process id.
+
+=item C<allow_publish>
+
+If set to true, then the C<'/pub'> requests will be allowed.
+Otherwise they will result in a '403 forbidden' response.  The default
+is false.
 
 =back
 
