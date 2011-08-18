@@ -32,19 +32,20 @@ foreach my $f (keys %inline_data) {
   }
 }
 
+
 sub call {
   my ($self, $env) = @_;
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
   return $self->_return_403 unless ($self->is_valid_topic);
-  return $self->static($env, $req, $path, $topic) if (exists $static{$path});
-  return $self->template($env, $req, $path, $topic)
+  return $self->_static($env, $req, $path, $topic) if (exists $static{$path});
+  return $self->_template($env, $req, $path, $topic)
     if (exists $template{$path});
   return $self->SUPER::call($env);
 }
 
-sub static {
+sub _static {
   my ($self, $env, $req, $page, $topic) = @_;
   my $data = $static{$page};
   return [200,
@@ -53,15 +54,15 @@ sub static {
           [$data]];
 }
 
-sub template {
+sub _template {
   my ($self, $env, $req, $page, $topic) = @_;
-  my $html = $self->page_renderer($page)->($env, $req, $topic)->as_string;
+  my $html = $self->_page_renderer($page)->($env, $req, $topic)->as_string;
   return [200,
           ['Content-Type' => 'text/html', 'Content-Length' => length $html],
           [$html]];
 }
 
-sub page_renderer {
+sub _page_renderer {
   my ($self, $page) = @_;
   return $self->{renderer}->{$page} if (exists $self->{renderer}->{$page});
   my $template = $template{$page};
@@ -113,7 +114,16 @@ then accessing, for example:
 
 The former provides a simple long poll interface (that will often miss
 messages - I plan to fix this) and the later provides a more reliable
-"multipart/mixed" interface.
+"multipart/mixed" interface using the
+L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
+
+=head1 METHODS
+
+=head2 C<call($env)>
+
+This method responds to HTTP requests for C<'/'>, C<'/js/DUI.js'> and
+C<'/js/Stream.js'> and delegates handling of other requests to the
+L<Plack::App::MQTT/call($env)> method.
 
 =head1 API
 
