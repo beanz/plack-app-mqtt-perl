@@ -5,7 +5,7 @@ use AnyEvent;
 use Net::MQTT::Message;
 use Net::MQTT::Constants;
 
-sub new { bless { calls => [] }, 'AnyEvent::MQTT' }
+sub new { bless { calls => [['new', @_]] }, 'AnyEvent::MQTT' }
 
 sub calls { splice @{$_[0]->{calls}} }
 
