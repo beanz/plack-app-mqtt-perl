@@ -24,6 +24,14 @@ sub unsubscribe {
   push @{$self->{calls}} => ['unsubscribe', @_];
 }
 
+sub publish {
+  my $self = shift;
+  push @{$self->{calls}} => ['publish', @_];
+  my $cv = AnyEvent->condvar;
+  $cv->send(1);
+  $cv;
+}
+
 sub cleanup {}
 
 1;

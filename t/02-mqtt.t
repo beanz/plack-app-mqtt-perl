@@ -4,7 +4,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 11;
+use Test::More tests => 15;
 use lib 't/lib';
 use Plack::Test;
 use HTTP::Request::Common;
@@ -47,3 +47,27 @@ test_psgi
         '... and some json';
     is_deeply([$component->mqtt->calls], [], '... no mqtt calls');
   };
+
+$component = Plack::App::MQTT->new(allow_publish => 1);
+$app = $component->to_app;
+ok($app, 'created app w/allow_publish');
+test_psgi
+  app => $app,
+  client => sub {
+    my $cb = shift;
+    my $res = $cb->(GET '/pub?topic=test&message=testing%201%202%203');
+    is $res->code, '200', '/pub?topic=test&message=... returned "200"';
+    is $res->content, '{"success":1}', '... and some json';
+    is_deeply([$component->mqtt->calls],
+              [
+               [
+                'new' => 'AnyEvent::MQTT'
+               ],
+               [
+                'publish',
+                'topic' => 'test',
+                'message' => 'testing 1 2 3'
+               ]
+              ], '... correct mqtt calls');
+  };
+
