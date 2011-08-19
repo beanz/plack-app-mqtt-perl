@@ -143,9 +143,9 @@ sub call {
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->_return_403 unless ($self->is_valid_topic);
-  my $method = $methods{$path} or return $self->_return_404;
-  return $self->_return_403 if ($path eq '/pub' && !$self->allow_publish);
+  return $self->return_403 unless ($self->is_valid_topic);
+  my $method = $methods{$path} or return $self->return_404;
+  return $self->return_403 if ($path eq '/pub' && !$self->allow_publish);
   return $self->$method($env, $req, $topic);
 }
 
