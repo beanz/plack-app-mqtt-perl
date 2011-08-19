@@ -61,7 +61,7 @@ use Sub::Name;
 use Scalar::Util qw/weaken/;
 use parent qw/Plack::Component/;
 use Plack::Util::Accessor qw/host port timeout keep_alive_timer client_id
-                             topic_regexp allow_publish/;
+                             topic_regexp allow_publish mqtt/;
 use Plack::Request;
 use JSON;
 use MIME::Base64;
@@ -107,6 +107,12 @@ If set to true, then the C<'/pub'> requests will be allowed.
 Otherwise they will result in a '403 forbidden' response.  The default
 is false.
 
+=item C<mqtt>
+
+This attribute can be used to provide an L<AnyEvent::MQTT> instance.
+If it is not supplied an instance is created using the C<host>, C<port>,
+etc. parameters.  If it is supplied those parameters are ignored.
+
 =back
 
 =cut
@@ -114,11 +120,15 @@ is false.
 sub prepare_app {
   my $self = shift;
   my %args = ();
-  foreach my $attr (qw/host port timeout keep_alive_timer client_id/) {
-    my $v = $self->$attr;
-    $args{$attr} = $v if (defined $v);
+  my $mqtt = $self->mqtt;
+  unless (defined $mqtt) {
+    foreach my $attr (qw/host port timeout keep_alive_timer client_id/) {
+      my $v = $self->$attr;
+      $args{$attr} = $v if (defined $v);
+    }
+    $mqtt = AnyEvent::MQTT->new(%args);
+    $self->mqtt($mqtt);
   }
-  $self->{mqtt} = AnyEvent::MQTT->new(%args);
   $self->{topic_re} = qr!$self->{topic_regexp}!o
     if (defined $self->{topic_regexp});
 }
@@ -204,7 +214,7 @@ the message has been published.
 sub publish {
   my ($self, $env, $req, $topic) = @_;
   my $message = $req->param('message');
-  my $mqtt = $self->{mqtt};
+  my $mqtt = $self->mqtt;
   return sub {
     my $respond = shift;
     print STDERR "Publishing: $topic => $message\n" if DEBUG;
@@ -230,7 +240,7 @@ TODO: need to add per-client backlog to avoid missing messages
 
 sub subscribe {
   my ($self, $env, $req, $topic) = @_;
-  my $mqtt = $self->{mqtt};
+  my $mqtt = $self->mqtt;
   return sub {
     my $respond = shift;
     my $cb;
@@ -271,7 +281,7 @@ series of JSON records for the form:
 
 sub submxhr {
   my ($self, $env, $req, $topic) = @_;
-  my $mqtt = $self->{mqtt};
+  my $mqtt = $self->mqtt;
   my $boundary = _mxhr_boundary();
   return sub {
     my $respond = shift;
@@ -300,7 +310,7 @@ sub _mxhr_boundary { # copied from Tatsumaki/Handler.pm
 }
 
 sub DESTROY {
-  $_[0]->{mqtt}->cleanup if (defined $_[0]->{mqtt});
+  $_[0]->mqtt->cleanup if (defined $_[0]->mqtt);
 }
 
 1;
