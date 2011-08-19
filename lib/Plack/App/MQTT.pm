@@ -215,11 +215,11 @@ sub publish {
   my ($self, $env, $req, $topic) = @_;
   my $message = $req->param('message');
   my $mqtt = $self->mqtt;
-  return sub {
+  return subname 'publish_response_closure' => sub {
     my $respond = shift;
     print STDERR "Publishing: $topic => $message\n" if DEBUG;
     my $cv = $mqtt->publish(topic => $topic, message => $message);
-    $cv->cb(sub {
+    $cv->cb(subname 'publish_callback' => sub {
               print STDERR "Published: $topic => $message\n" if DEBUG;
               _return_json($respond, { success => 1 });
             });
@@ -241,10 +241,10 @@ TODO: need to add per-client backlog to avoid missing messages
 sub subscribe {
   my ($self, $env, $req, $topic) = @_;
   my $mqtt = $self->mqtt;
-  return sub {
+  return subname 'subscribe_response_closure' => sub {
     my $respond = shift;
     my $cb;
-    $cb = sub {
+    $cb = subname 'subscribe_response_cb' => sub {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $mqtt->unsubscribe(topic => $topic, callback => $cb);
@@ -283,7 +283,7 @@ sub submxhr {
   my ($self, $env, $req, $topic) = @_;
   my $mqtt = $self->mqtt;
   my $boundary = _mxhr_boundary();
-  return sub {
+  return subname 'submxhr_response_closure' => sub {
     my $respond = shift;
     my $writer =
       $respond->([200,
@@ -291,7 +291,7 @@ sub submxhr {
                  ]);
     $writer->write('--'.$boundary."\n");
     my $cb;
-    $cb = sub {
+    $cb = subname 'submxhr_response_cb' => sub {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $writer->write("Content-Type: application/json\n\n".
