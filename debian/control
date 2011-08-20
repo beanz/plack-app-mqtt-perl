@@ -9,7 +9,10 @@ Homepage: http://search.cpan.org/dist/Plack-App-MQTT/
 
 Package: libplack-app-mqtt-perl
 Architecture: all
-Depends: ${perl:Depends}, ${misc:Depends}, libanyevent-mqtt-perl (>= 1.112320-1)
+Depends: ${perl:Depends}, ${misc:Depends},
+         libanyevent-mqtt-perl (>= 1.112320-1), libsub-name-perl,
+         libplack-perl, libjson-perl, libanyevent-perl
+Suggests: libtext-microtemplate-perl
 Description: Plack::App::MQTT Perl Module
  This module is a Plack application that provides an AJAX to MQTT
  bridge.  It can be used on its own or combined with L<Plack::Builder>
