@@ -10,6 +10,7 @@ debian/changelog
 debian/compat
 debian/control
 debian/copyright
+debian/libplack-app-mqtt.docs
 debian/rules
 debian/watch
 dist.ini
@@ -26,7 +27,5 @@ t/release-eol.t
 t/release-kwalitee.t
 t/release-no-tabs.t
 t/release-pod-coverage.t
-t/release-pod-linkcheck.t
-t/release-pod-no404s.t
 t/release-pod-syntax.t
 t/release-synopsis.t
