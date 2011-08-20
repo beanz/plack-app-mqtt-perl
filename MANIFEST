@@ -10,7 +10,7 @@ debian/changelog
 debian/compat
 debian/control
 debian/copyright
-debian/libplack-app-mqtt.docs
+debian/libplack-app-mqtt-perl.docs
 debian/rules
 debian/watch
 dist.ini
