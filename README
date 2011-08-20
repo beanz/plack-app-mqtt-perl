@@ -2,7 +2,7 @@ NAME
     Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
 
 VERSION
-    version 1.112300
+    version 1.112320
 
 SYNOPSIS
       use Plack::App::MQTT;
@@ -61,6 +61,11 @@ METHODS
         they will result in a '403 forbidden' response. The default is
         false.
 
+    "mqtt"
+        This attribute can be used to provide an AnyEvent::MQTT instance. If
+        it is not supplied an instance is created using the "host", "port",
+        etc. parameters. If it is supplied those parameters are ignored.
+
   "call($env)"
     This method routes HTTP requests to "/pub", "/sub" and "/submxhr" to the
     "publish($env, $req, $topic)", "subscribe($env, $req, $topic)", or
@@ -108,9 +113,6 @@ METHODS
 API
     This is an early release and the API is very likely to change in
     subsequent releases.
-
-BUGS
-    This code has lots of bugs - multiple non-mxhr clients wont work, etc.
 
 DISCLAIMER
     This is not official IBM code. I work for IBM but I'm writing this in my

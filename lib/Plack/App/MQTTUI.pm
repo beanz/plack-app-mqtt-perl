@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Plack::App::MQTTUI;
 BEGIN {
-  $Plack::App::MQTTUI::VERSION = '1.112300';
+  $Plack::App::MQTTUI::VERSION = '1.112320';
 }
 
 # ABSTRACT: Plack Application to provide simple UI for AJAX to MQTT bridge
@@ -82,7 +82,7 @@ Plack::App::MQTTUI - Plack Application to provide simple UI for AJAX to MQTT bri
 
 =head1 VERSION
 
-version 1.112300
+version 1.112320
 
 =head1 SYNOPSIS
 

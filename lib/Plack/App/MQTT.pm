@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Plack::App::MQTT;
 BEGIN {
-  $Plack::App::MQTT::VERSION = '1.112300';
+  $Plack::App::MQTT::VERSION = '1.112320';
 }
 
 # ABSTRACT: Plack Application to provide AJAX to MQTT bridge
@@ -15,7 +15,7 @@ use Sub::Name;
 use Scalar::Util qw/weaken/;
 use parent qw/Plack::Component/;
 use Plack::Util::Accessor qw/host port timeout keep_alive_timer client_id
-                             topic_regexp allow_publish/;
+                             topic_regexp allow_publish mqtt/;
 use Plack::Request;
 use JSON;
 use MIME::Base64;
@@ -31,11 +31,15 @@ our %methods =
 sub prepare_app {
   my $self = shift;
   my %args = ();
-  foreach my $attr (qw/host port timeout keep_alive_timer client_id/) {
-    my $v = $self->$attr;
-    $args{$attr} = $v if (defined $v);
+  my $mqtt = $self->mqtt;
+  unless (defined $mqtt) {
+    foreach my $attr (qw/host port timeout keep_alive_timer client_id/) {
+      my $v = $self->$attr;
+      $args{$attr} = $v if (defined $v);
+    }
+    $mqtt = AnyEvent::MQTT->new(%args);
+    $self->mqtt($mqtt);
   }
-  $self->{mqtt} = AnyEvent::MQTT->new(%args);
   $self->{topic_re} = qr!$self->{topic_regexp}!o
     if (defined $self->{topic_regexp});
 }
@@ -48,9 +52,9 @@ sub call {
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->_return_403 unless ($self->is_valid_topic);
-  my $method = $methods{$path} or return $self->_return_404;
-  return $self->_return_403 if ($path eq '/pub' && !$self->allow_publish);
+  return $self->return_403 unless ($self->is_valid_topic);
+  my $method = $methods{$path} or return $self->return_404;
+  return $self->return_403 if ($path eq '/pub' && !$self->allow_publish);
   return $self->$method($env, $req, $topic);
 }
 
@@ -82,12 +86,12 @@ sub return_403 {
 sub publish {
   my ($self, $env, $req, $topic) = @_;
   my $message = $req->param('message');
-  my $mqtt = $self->{mqtt};
-  return sub {
+  my $mqtt = $self->mqtt;
+  return subname 'publish_response_closure' => sub {
     my $respond = shift;
     print STDERR "Publishing: $topic => $message\n" if DEBUG;
     my $cv = $mqtt->publish(topic => $topic, message => $message);
-    $cv->cb(sub {
+    $cv->cb(subname 'publish_callback' => sub {
               print STDERR "Published: $topic => $message\n" if DEBUG;
               _return_json($respond, { success => 1 });
             });
@@ -97,11 +101,11 @@ sub publish {
 
 sub subscribe {
   my ($self, $env, $req, $topic) = @_;
-  my $mqtt = $self->{mqtt};
-  return sub {
+  my $mqtt = $self->mqtt;
+  return subname 'subscribe_response_closure' => sub {
     my $respond = shift;
     my $cb;
-    $cb = sub {
+    $cb = subname 'subscribe_response_cb' => sub {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $mqtt->unsubscribe(topic => $topic, callback => $cb);
@@ -129,9 +133,9 @@ sub _return_json {
 
 sub submxhr {
   my ($self, $env, $req, $topic) = @_;
-  my $mqtt = $self->{mqtt};
+  my $mqtt = $self->mqtt;
   my $boundary = _mxhr_boundary();
-  return sub {
+  return subname 'submxhr_response_closure' => sub {
     my $respond = shift;
     my $writer =
       $respond->([200,
@@ -139,7 +143,7 @@ sub submxhr {
                  ]);
     $writer->write('--'.$boundary."\n");
     my $cb;
-    $cb = sub {
+    $cb = subname 'submxhr_response_cb' => sub {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
       $writer->write("Content-Type: application/json\n\n".
@@ -158,7 +162,7 @@ sub _mxhr_boundary { # copied from Tatsumaki/Handler.pm
 }
 
 sub DESTROY {
-  $_[0]->{mqtt}->cleanup if (defined $_[0]->{mqtt});
+  $_[0]->mqtt->cleanup if (defined $_[0]->mqtt);
 }
 
 1;
@@ -172,7 +176,7 @@ Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
 
 =head1 VERSION
 
-version 1.112300
+version 1.112320
 
 =head1 SYNOPSIS
 
@@ -244,6 +248,12 @@ If set to true, then the C<'/pub'> requests will be allowed.
 Otherwise they will result in a '403 forbidden' response.  The default
 is false.
 
+=item C<mqtt>
+
+This attribute can be used to provide an L<AnyEvent::MQTT> instance.
+If it is not supplied an instance is created using the C<host>, C<port>,
+etc. parameters.  If it is supplied those parameters are ignored.
+
 =back
 
 =head2 C<call($env)>
@@ -302,10 +312,6 @@ series of JSON records for the form:
 
 This is an early release and the API is B<very> likely to change in
 subsequent releases.
-
-=head1 BUGS
-
-This code has lots of bugs - multiple non-mxhr clients wont work, etc.
 
 =head1 DISCLAIMER
 

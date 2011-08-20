@@ -22,7 +22,7 @@
       "runtime" : {
          "requires" : {
             "AnyEvent" : 0,
-            "AnyEvent::MQTT" : 0,
+            "AnyEvent::MQTT" : "1.112320",
             "JSON" : 0,
             "MIME::Base64" : 0,
             "Plack::Component" : 0,
@@ -38,6 +38,10 @@
       "test" : {
          "requires" : {
             "English" : 0,
+            "HTTP::Request::Common" : 0,
+            "Net::MQTT::Constants" : 0,
+            "Net::MQTT::Message" : 0,
+            "Plack::Test" : 0,
             "Test::More" : 0
          }
       }
@@ -53,6 +57,6 @@
          "web" : "https://github.com/beanz/plack-app-mqtt-perl"
       }
    },
-   "version" : "1.112300"
+   "version" : "1.112320"
 }
 

@@ -13,6 +13,10 @@ my %WriteMakefileArgs = (
   'AUTHOR' => 'Mark Hindess <soft-cpan@temporalanomaly.com>',
   'BUILD_REQUIRES' => {
     'English' => '0',
+    'HTTP::Request::Common' => '0',
+    'Net::MQTT::Constants' => '0',
+    'Net::MQTT::Message' => '0',
+    'Plack::Test' => '0',
     'Test::More' => '0'
   },
   'CONFIGURE_REQUIRES' => {
@@ -24,7 +28,7 @@ my %WriteMakefileArgs = (
   'NAME' => 'Plack::App::MQTT',
   'PREREQ_PM' => {
     'AnyEvent' => '0',
-    'AnyEvent::MQTT' => '0',
+    'AnyEvent::MQTT' => '1.112320',
     'JSON' => '0',
     'MIME::Base64' => '0',
     'Plack::Component' => '0',
@@ -36,7 +40,7 @@ my %WriteMakefileArgs = (
     'constant' => '0',
     'parent' => '0'
   },
-  'VERSION' => '1.112300',
+  'VERSION' => '1.112320',
   'test' => {
     'TESTS' => 't/*.t'
   }
