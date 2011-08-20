@@ -43,10 +43,6 @@ L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
 This is an early release and the API is B<very> likely to change in
 subsequent releases.
 
-=head1 BUGS
-
-This code has lots of bugs - multiple non-mxhr clients wont work, etc.
-
 =head1 DISCLAIMER
 
 This is B<not> official IBM code.  I work for IBM but I'm writing this
