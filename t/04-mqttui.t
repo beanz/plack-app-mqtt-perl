@@ -4,7 +4,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 17;
+use Test::More tests => 24;
 use lib 't/lib';
 use Plack::Test;
 use HTTP::Request::Common;
@@ -26,6 +26,17 @@ test_psgi
   };
 
 test_psgi
+  app => $app,
+  client => sub {
+    my $cb = shift;
+    my $res = $cb->(GET '/?topic=test');
+    is $res->code, '200', '/?topic=test returned "200"';
+    is $res->header('Content-Type'), 'text/html', '... and content-type html';
+    is((substr $res->content, 0, 6), '<html>', '... and content "<html>..."');
+    is_deeply([$component->mqtt->calls], [], '... correct mqtt calls');
+  };
+
+test_psgi # test with cached template renderer
   app => $app,
   client => sub {
     my $cb = shift;
@@ -60,4 +71,21 @@ test_psgi
     is((substr $res->content, 0, 17), "/**\n * DUI.Stream",
        '... and content "/**\n * DUI.Stream..."');
     is_deeply([$component->mqtt->calls], [], '... correct mqtt calls');
+  };
+
+test_psgi # test pass-thorough to parent
+  app => $app,
+  client => sub {
+    my $cb = shift;
+    my $res = $cb->(GET '/sub?topic=test');
+    is $res->code, '200', '/sub?topic=test returned "200"';
+    is_deeply((decode_json $res->content),
+              {
+               type => 'mqtt_message',
+               topic => 'test',
+               message => 'test'
+              },
+              '... and some json');
+    is_deeply([map { $_->[0] } $component->mqtt->calls],
+              ['subscribe', 'unsubscribe'], '... correct mqtt calls');
   };
