@@ -256,8 +256,7 @@ sub _mqtt_record {
 }
 
 sub _return_json {
-  my ($respond, $ref, $code) = @_;
-  $code = 200 unless (defined $code);
+  my ($respond, $ref) = @_;
   my $json = JSON::encode_json($ref);
   $respond->([200,
               ['Content-Type' => 'application/json',
