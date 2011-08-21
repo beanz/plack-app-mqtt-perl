@@ -11,7 +11,7 @@ use HTTP::Request::Common;
 use JSON;
 
 use_ok('Plack::App::MQTT');
-my $component = Plack::App::MQTT->new();
+my $component = Plack::App::MQTT->new(timeout => 5);
 my $app = $component->to_app;
 ok($app, 'created app');
 test_psgi
@@ -22,7 +22,8 @@ test_psgi
     is $res->code, '404', '/ returned "404"';
     is $res->content, 'not found', '... and content "not found"';
     is_deeply([$component->mqtt->calls],
-              [['new' => 'AnyEvent::MQTT']], '... correct mqtt calls');
+              [['new' => 'AnyEvent::MQTT', timeout => 5]],
+              '... correct mqtt calls');
   };
 
 test_psgi
