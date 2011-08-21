@@ -61,7 +61,7 @@ sub call {
 
 sub is_valid_topic {
   my ($self, $topic) = @_;
-  !defined $topic || !defined $self->{topic_re} || $topic =~ $self->{topic_re}
+  defined $topic && (!defined $self->{topic_re} || $topic =~ $self->{topic_re})
 }
 
 

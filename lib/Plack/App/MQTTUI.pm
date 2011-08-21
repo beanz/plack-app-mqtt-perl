@@ -37,9 +37,9 @@ sub call {
   my ($self, $env) = @_;
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
+  return $self->_static($env, $req, $path) if (exists $static{$path});
   my $topic = $req->param('topic');
   return $self->return_403 unless ($self->is_valid_topic($topic));
-  return $self->_static($env, $req, $path, $topic) if (exists $static{$path});
   return $self->_template($env, $req, $path, $topic)
     if (exists $template{$path});
   return $self->SUPER::call($env);

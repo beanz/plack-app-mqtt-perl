@@ -4,7 +4,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 17;
+use Test::More tests => 20;
 use lib 't/lib';
 use Plack::Test;
 use HTTP::Request::Common;
@@ -19,11 +19,21 @@ test_psgi
   client => sub {
     my $cb = shift;
     my $res = $cb->(GET '/');
-    is $res->code, '404', '/ returned "404"';
-    is $res->content, 'not found', '... and content "not found"';
+    is $res->code, '403', '/ returned "403"';
+    is $res->content, 'forbidden', '... and content "forbidden"';
     is_deeply([$component->mqtt->calls],
               [['new' => 'AnyEvent::MQTT', timeout => 5]],
               '... correct mqtt calls');
+  };
+
+test_psgi
+  app => $app,
+  client => sub {
+    my $cb = shift;
+    my $res = $cb->(GET '/?topic=test');
+    is $res->code, '404', '/ returned "404"';
+    is $res->content, 'not found', '... and content "not found"';
+    is_deeply([$component->mqtt->calls], [], '... no mqtt calls');
   };
 
 test_psgi
