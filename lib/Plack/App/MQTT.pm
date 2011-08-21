@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Plack::App::MQTT;
 BEGIN {
-  $Plack::App::MQTT::VERSION = '1.112320';
+  $Plack::App::MQTT::VERSION = '1.112330';
 }
 
 # ABSTRACT: Plack Application to provide AJAX to MQTT bridge
@@ -176,7 +176,7 @@ Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
 
 =head1 VERSION
 
-version 1.112320
+version 1.112330
 
 =head1 SYNOPSIS
 

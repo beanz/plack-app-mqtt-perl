@@ -34,4 +34,4 @@ requires:
 resources:
   bugtracker: https://github.com/beanz/plack-app-mqtt-perl/issues
   repository: git://github.com/beanz/plack-app-mqtt-perl.git
-version: 1.112320
+version: 1.112330

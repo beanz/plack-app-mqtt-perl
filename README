@@ -2,7 +2,7 @@ NAME
     Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
 
 VERSION
-    version 1.112320
+    version 1.112330
 
 SYNOPSIS
       use Plack::App::MQTT;
