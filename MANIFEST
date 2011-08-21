@@ -20,6 +20,7 @@ lib/Plack/App/MQTT.pm
 lib/Plack/App/MQTTUI.pm
 t/01-use.t
 t/02-mqtt.t
+t/03-mqtt-with-topic-regexp.t
 t/author-critic.t
 t/lib/AnyEvent/MQTT.pm
 t/release-common_spelling.t

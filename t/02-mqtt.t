@@ -4,7 +4,7 @@
 
 use strict;
 use warnings;
-use Test::More tests => 15;
+use Test::More tests => 17;
 use lib 't/lib';
 use Plack::Test;
 use HTTP::Request::Common;
@@ -76,3 +76,34 @@ test_psgi
               ], '... correct mqtt calls');
   };
 
+is_deeply($component->return_403(
+                        q{I'm sorry, Dave. I'm afraid I can't do that.}),
+          [
+           403,
+           [
+            'Content-Type',
+            'text/plain',
+            'Content-Length',
+            44
+           ],
+           [
+            'I\'m sorry, Dave. I\'m afraid I can\'t do that.'
+           ]
+          ],
+          'test 403 w/message');
+
+is_deeply($component->return_404(
+                        q{These aren't the droids you're looking for.}),
+          [
+           404,
+           [
+            'Content-Type',
+            'text/plain',
+            'Content-Length',
+            43
+           ],
+           [
+            'These aren\'t the droids you\'re looking for.'
+           ]
+          ],
+          'test 404 w/message');

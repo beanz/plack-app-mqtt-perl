@@ -40,8 +40,8 @@ sub prepare_app {
     $mqtt = AnyEvent::MQTT->new(%args);
     $self->mqtt($mqtt);
   }
-  $self->{topic_re} = qr!$self->{topic_regexp}!o
-    if (defined $self->{topic_regexp});
+  my $tr = $self->topic_regexp;
+  $self->{topic_re} = qr!$tr!o if (defined $tr);
 }
 
 
@@ -52,7 +52,7 @@ sub call {
   my $req = Plack::Request->new($env);
   my $path = $req->path_info;
   my $topic = $req->param('topic');
-  return $self->return_403 unless ($self->is_valid_topic);
+  return $self->return_403 unless ($self->is_valid_topic($topic));
   my $method = $methods{$path} or return $self->return_404;
   return $self->return_403 if ($path eq '/pub' && !$self->allow_publish);
   return $self->$method($env, $req, $topic);
@@ -121,8 +121,7 @@ sub _mqtt_record {
 }
 
 sub _return_json {
-  my ($respond, $ref, $code) = @_;
-  $code = 200 unless (defined $code);
+  my ($respond, $ref) = @_;
   my $json = JSON::encode_json($ref);
   $respond->([200,
               ['Content-Type' => 'application/json',
