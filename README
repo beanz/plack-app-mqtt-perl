@@ -1,0 +1,129 @@
+NAME
+    Plack::App::MQTT - Plack Application to provide AJAX to MQTT bridge
+
+VERSION
+    version 1.112330
+
+SYNOPSIS
+      use Plack::App::MQTT;
+      my $app = Plack::App::MQTT->new(host => 'mqtt.example.com',
+                                      allow_publish => 1)->to_app;
+
+      # Or mount under /mqtt namespace, subscribe only
+      use Plack::Builder;
+      builder {
+        mount '/mqtt' => Plack::App::MQTT->new();
+      };
+
+DESCRIPTION
+    This module is a Plack application that provides an AJAX to MQTT bridge.
+    It can be used on its own or combined with Plack::Builder to provide an
+    AJAX MQTT interface for existing Plack applications (such as Catalyst,
+    Dancer, etc applications).
+
+    This distribution includes an example application "eg/mqttui.psgi" that
+    can be used for testing by running:
+
+      MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
+
+    then accessing, for example:
+
+      http://127.0.0.1:5000/?topic=test
+      http://127.0.0.1:5000/?topic=test&mxhr=1
+
+    The former provides a simple long poll interface (that will often miss
+    messages - I plan to fix this) and the later provides a more reliable
+    "multipart/mixed" interface using the <DUI.Stream> library.
+
+METHODS
+  "new(%params)"
+    Constructs a new "Plack::App::MQTT" object. The supported parameters
+    are:
+
+    "host"
+        The server host. Defaults to 127.0.0.1.
+
+    "port"
+        The server port. Defaults to 1883.
+
+    "timeout"
+        The timeout for responses from the server.
+
+    "keep_alive_timer"
+        The keep alive timer.
+
+    "client_id"
+        Sets the client id for the client overriding the default which is
+        "Net::MQTT::Message[NNNNN]" where NNNNN is the process id.
+
+    "allow_publish"
+        If set to true, then the '/pub' requests will be allowed. Otherwise
+        they will result in a '403 forbidden' response. The default is
+        false.
+
+    "mqtt"
+        This attribute can be used to provide an AnyEvent::MQTT instance. If
+        it is not supplied an instance is created using the "host", "port",
+        etc. parameters. If it is supplied those parameters are ignored.
+
+  "call($env)"
+    This method routes HTTP requests to "/pub", "/sub" and "/submxhr" to the
+    "publish($env, $req, $topic)", "subscribe($env, $req, $topic)", or
+    "submxhr($env, $req, $topic)" methods respectively.
+
+    If the topic fails the "is_valid_topic($topic)" test then a 403 error is
+    returned. If the request is '/pub' then a 403 error is returned unless
+    the "allow_publish" parameter was passed a true value to the
+    constructor.
+
+  "is_valid_topic($topic)"
+    This helper method returns true if the topic is valid. If the
+    "topic_regexp" parameter was passed to the constructor, then the topic
+    is valid if it matches that expression. Otherwise any topic is valid.
+
+  "return_404([$message])"
+    This helper method constructs a 404 response with the given message or
+    'not found' if no message is supplied.
+
+  "return_403([$message])"
+    This helper method constructs a 403 response with the given message or
+    'forbidden' if no message is supplied.
+
+  "publish($env, $req, $topic)"
+    This method processes HTTP requests to "/pub". It requires "topic" and
+    "message" parameters and returns the JSON '{ success: 1 }' when the
+    message has been published.
+
+  "subscribe($env, $req, $topic)"
+    This method processes HTTP requests to "/sub". It requires a "topic"
+    parameter and returns the next MQTT message received on that topic as a
+    JSON record for the form:
+
+      { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+    TODO: need to add per-client backlog to avoid missing messages
+
+  "submxhr($env, $req, $topic)"
+    This method processes HTTP requests to "/submxhr". It requires a "topic"
+    parameter and returns a 'multipart/mixed' response with a series of JSON
+    records for the form:
+
+      { type: 'mqtt_message', message: 'message', topic: 'topic' }
+
+API
+    This is an early release and the API is very likely to change in
+    subsequent releases.
+
+DISCLAIMER
+    This is not official IBM code. I work for IBM but I'm writing this in my
+    spare time (with permission) for fun.
+
+AUTHOR
+    Mark Hindess <soft-cpan@temporalanomaly.com>
+
+COPYRIGHT AND LICENSE
+    This software is copyright (c) 2011 by Mark Hindess.
+
+    This is free software; you can redistribute it and/or modify it under
+    the same terms as the Perl 5 programming language system itself.
+

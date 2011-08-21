@@ -1,58 +1,12 @@
 use strict;
 use warnings;
 package Plack::App::MQTTUI;
+BEGIN {
+  $Plack::App::MQTTUI::VERSION = '1.112330';
+}
 
 # ABSTRACT: Plack Application to provide simple UI for AJAX to MQTT bridge
 
-=head1 SYNOPSIS
-
-  use Plack::App::MQTTUI;
-  my $app = Plack::App::MQTTUI->new(host => 'mqtt.example.com',
-                                    allow_publish => 1)->to_app;
-
-  # Or mount under /mqtt namespace, subscribe only
-  use Plack::Builder;
-  builder {
-    mount '/mqtt' => Plack::App::MQTTUI->new();
-  };
-
-=head1 DESCRIPTION
-
-This module is a Plack application that provides an AJAX to MQTT
-bridge.  It can be used on its own or combined with L<Plack::Builder>
-to provide an AJAX MQTT interface for existing Plack applications
-(such as L<Catalyst>, L<Dancer>, etc applications).
-
-This distribution includes an example application C<eg/mqttui.psgi>
-that can be used for testing by running:
-
-  MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
-
-then accessing, for example:
-
-  http://127.0.0.1:5000/?topic=test
-  http://127.0.0.1:5000/?topic=test&mxhr=1
-
-The former provides a simple long poll interface (that will often miss
-messages - I plan to fix this) and the later provides a more reliable
-"multipart/mixed" interface using the
-L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
-
-=head1 API
-
-This is an early release and the API is B<very> likely to change in
-subsequent releases.
-
-=head1 BUGS
-
-This code has lots of bugs - multiple non-mxhr clients wont work, etc.
-
-=head1 DISCLAIMER
-
-This is B<not> official IBM code.  I work for IBM but I'm writing this
-in my spare time (with permission) for fun.
-
-=cut
 
 use constant DEBUG => $ENV{PLACK_APP_MQTT_DEBUG};
 use parent qw/Plack::App::MQTT/;
@@ -78,13 +32,6 @@ foreach my $f (keys %inline_data) {
   }
 }
 
-=method C<call($env)>
-
-This method responds to HTTP requests for C<'/'>, C<'/js/DUI.js'> and
-C<'/js/Stream.js'> and delegates handling of other requests to the
-L<Plack::App::MQTT/call($env)> method.
-
-=cut
 
 sub call {
   my ($self, $env) = @_;
@@ -124,6 +71,88 @@ sub _page_renderer {
 }
 
 1;
+
+
+
+=pod
+
+=head1 NAME
+
+Plack::App::MQTTUI - Plack Application to provide simple UI for AJAX to MQTT bridge
+
+=head1 VERSION
+
+version 1.112330
+
+=head1 SYNOPSIS
+
+  use Plack::App::MQTTUI;
+  my $app = Plack::App::MQTTUI->new(host => 'mqtt.example.com',
+                                    allow_publish => 1)->to_app;
+
+  # Or mount under /mqtt namespace, subscribe only
+  use Plack::Builder;
+  builder {
+    mount '/mqtt' => Plack::App::MQTTUI->new();
+  };
+
+=head1 DESCRIPTION
+
+This module is a Plack application that provides an AJAX to MQTT
+bridge.  It can be used on its own or combined with L<Plack::Builder>
+to provide an AJAX MQTT interface for existing Plack applications
+(such as L<Catalyst>, L<Dancer>, etc applications).
+
+This distribution includes an example application C<eg/mqttui.psgi>
+that can be used for testing by running:
+
+  MQTT_SERVER=127.0.0.1 plackup eg/mqttui.psgi
+
+then accessing, for example:
+
+  http://127.0.0.1:5000/?topic=test
+  http://127.0.0.1:5000/?topic=test&mxhr=1
+
+The former provides a simple long poll interface (that will often miss
+messages - I plan to fix this) and the later provides a more reliable
+"multipart/mixed" interface using the
+L<DUI.Stream|http://about.digg.com/blog/duistream-and-mxhr> library.
+
+=head1 METHODS
+
+=head2 C<call($env)>
+
+This method responds to HTTP requests for C<'/'>, C<'/js/DUI.js'> and
+C<'/js/Stream.js'> and delegates handling of other requests to the
+L<Plack::App::MQTT/call($env)> method.
+
+=head1 API
+
+This is an early release and the API is B<very> likely to change in
+subsequent releases.
+
+=head1 BUGS
+
+This code has lots of bugs - multiple non-mxhr clients wont work, etc.
+
+=head1 DISCLAIMER
+
+This is B<not> official IBM code.  I work for IBM but I'm writing this
+in my spare time (with permission) for fun.
+
+=head1 AUTHOR
+
+Mark Hindess <soft-cpan@temporalanomaly.com>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2011 by Mark Hindess.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
+
 
 __DATA__
 ==== / ====
