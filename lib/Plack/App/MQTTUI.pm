@@ -137,8 +137,8 @@ __DATA__
   <script src="http://www.google.com/jsapi"></script>
   <script type="text/javascript"> google.load("jquery", "1.6"); </script>
 ? if ($mxhr) {
-  <script src="/js/DUI.js"></script>
-  <script src="/js/Stream.js"></script>
+  <script src="js/DUI.js"></script>
+  <script src="js/Stream.js"></script>
 ? }
   <script type="text/javascript">
 ? if ($allow_pub) {
