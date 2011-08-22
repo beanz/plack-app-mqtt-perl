@@ -2,7 +2,7 @@ use strict;
 use warnings;
 package Plack::App::MQTTUI;
 BEGIN {
-  $Plack::App::MQTTUI::VERSION = '1.112330';
+  $Plack::App::MQTTUI::VERSION = '1.112340';
 }
 
 # ABSTRACT: Plack Application to provide simple UI for AJAX to MQTT bridge
@@ -82,7 +82,7 @@ Plack::App::MQTTUI - Plack Application to provide simple UI for AJAX to MQTT bri
 
 =head1 VERSION
 
-version 1.112330
+version 1.112340
 
 =head1 SYNOPSIS
 
@@ -166,8 +166,8 @@ __DATA__
   <script src="http://www.google.com/jsapi"></script>
   <script type="text/javascript"> google.load("jquery", "1.6"); </script>
 ? if ($mxhr) {
-  <script src="/js/DUI.js"></script>
-  <script src="/js/Stream.js"></script>
+  <script src="js/DUI.js"></script>
+  <script src="js/Stream.js"></script>
 ? }
   <script type="text/javascript">
 ? if ($allow_pub) {

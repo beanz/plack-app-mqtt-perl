@@ -37,10 +37,11 @@ my %WriteMakefileArgs = (
     'Scalar::Util' => '0',
     'Sub::Name' => '0',
     'Text::MicroTemplate' => '0',
+    'Try::Tiny' => '0',
     'constant' => '0',
     'parent' => '0'
   },
-  'VERSION' => '1.112330',
+  'VERSION' => '1.112340',
   'test' => {
     'TESTS' => 't/*.t'
   }
