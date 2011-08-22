@@ -1,4 +1,8 @@
 Revision history for Perl extension Plack::App::MQTT.
 
+1.112340  2011-08-22 20:30:02 Europe/London
+    - Fix javascript path when used with Plack::Builder - i.e. "js/..." not
+      "/js/...".
+
 1.112330  2011-08-21 14:19:10 Europe/London
     - Initial release.

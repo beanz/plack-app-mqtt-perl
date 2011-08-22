@@ -29,9 +29,10 @@ requires:
   Scalar::Util: 0
   Sub::Name: 0
   Text::MicroTemplate: 0
+  Try::Tiny: 0
   constant: 0
   parent: 0
 resources:
   bugtracker: https://github.com/beanz/plack-app-mqtt-perl/issues
   repository: git://github.com/beanz/plack-app-mqtt-perl.git
-version: 1.112330
+version: 1.112340
