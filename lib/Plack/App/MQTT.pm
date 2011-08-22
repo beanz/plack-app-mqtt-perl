@@ -61,6 +61,7 @@ use Plack::Util::Accessor qw/host port timeout keep_alive_timer client_id
 use Plack::Request;
 use JSON;
 use MIME::Base64;
+use Try::Tiny;
 
 our %methods =
   (
@@ -289,9 +290,15 @@ sub submxhr {
     $cb = subname 'submxhr_response_cb' => sub {
       my ($topic, $message) = @_;
       print STDERR "Received: $topic => $message\n" if DEBUG;
-      $writer->write("Content-Type: application/json\n\n".
-                     JSON::encode_json(_mqtt_record($topic, $message)).
-                     "\n--".$boundary."\n");
+      try {
+        $writer->write("Content-Type: application/json\n\n".
+                       JSON::encode_json(_mqtt_record($topic, $message)).
+                       "\n--".$boundary."\n");
+      } catch {
+        die $_ unless (/Broken pipe/i || /Connection timed out/i);
+        $mqtt->unsubscribe(topic => $topic, callback => $cb);
+        print STDERR "Client closed\n" if DEBUG;
+      };
     };
     $mqtt->subscribe(topic => $topic, callback => $cb);
   };
